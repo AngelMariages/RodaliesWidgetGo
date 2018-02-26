@@ -1,50 +1,96 @@
 package main
 
 import (
+	"context"
+	"encoding/xml"
 	"fmt"
-	"strings"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+	"time"
 
-	"github.com/PuerkitoBio/goquery"
+	"firebase.google.com/go"
 )
 
-type incidence struct {
-	comunidad string
-	category  string
-	alert     string
+type incidences struct {
+	Alerts []alert `xml:"aviso"`
+}
+
+type alert struct {
+	ID       string `xml:"id"`
+	Date     string `xml:"publicacion"`
+	CA       string `xml:"categoria"`
+	Affects  string `xml:"area"`
+	Title    string `xml:"titular"`
+	Subtitle string `xml:"entradilla"`
+	Text     string `xml:"texto"`
 }
 
 // Aldiriko, Rodalies, Cercanias
 
+var cercaniasRegex = regexp.MustCompile("(rodalies)?(cercanias)?(aldiriko)?/i")
+
 func main() {
-	alerts := make(map[string][]*incidence)
-	doc, err := goquery.NewDocument("http://web02.renfe.es/u13/MTR/UltimaHora.nsf/Carga%20Vista%203A?OpenAgent")
+	client := &http.Client{
+		Timeout: 3 * time.Second,
+	}
+
+	res, err := client.Get("http://web02.renfe.es/u13/MTR/UltimaHora.nsf/xmlAvisosApp")
 
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("error!", err)
 		return
 	}
 
-	doc.Find(".cuerpoavisos ul").Each(func(i int, node *goquery.Selection) {
-		node.Find(".comunidad").Each(func(i int, comunity *goquery.Selection) {
-			com := comunity.Text()
-			node.Find(".avisos a").Each(func(i int, aviso *goquery.Selection) {
-				cat := aviso.ChildrenFiltered(".str").Text()
-				aviso.Children().Remove()
-				alert := strings.TrimSpace(aviso.Text())
-				alerts[com] = append(alerts[com], &incidence{
-					com,
-					cat,
-					alert,
-				})
-			})
-		})
-	})
+	body, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
 
-	for _, alert := range alerts {
-		for _, inc := range alert {
-			fmt.Println(inc)
+	if err != nil {
+		fmt.Println("error!", err)
+		return
+	}
+
+	//fmt.Println("Read:\n", string(body))
+
+	var i incidences
+	err = xml.Unmarshal(body, &i)
+	if err != nil {
+		fmt.Println("error!", err)
+		return
+	}
+
+	fmt.Println(i.Alerts)
+	for _, alert := range i.Alerts {
+		fmt.Println(alert.Date)
+		fmt.Println(alert.CA)
+		fmt.Println(alert.Affects)
+		fmt.Println(alert.Title)
+		fmt.Println(alert.Subtitle)
+		fmt.Println(alert.Text)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println()
+	}
+
+	conf := &firebase.Config{ProjectID: "rodalieswidget"}
+	app, err := firebase.NewApp(context.Background(), conf)
+	if err != nil {
+		fmt.Println("error!", err)
+		return
+	}
+
+	cl, err := app.Firestore(context.Background())
+	if err != nil {
+		fmt.Println("error!", err)
+		return
+	}
+	defer cl.Close()
+
+	for _, alert := range i.Alerts {
+		_, err = cl.Collection("incidences").Doc(alert.ID).Set(context.Background(), alert)
+		if err != nil {
+			fmt.Println("error!", err)
+			return
 		}
-		fmt.Println()
-		fmt.Println()
 	}
 }
