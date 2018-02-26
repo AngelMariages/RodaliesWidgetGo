@@ -12,7 +12,7 @@ import (
 
 	"google.golang.org/api/option"
 
-	"firebase.google.com/go"
+	"cloud.google.com/go/firestore"
 )
 
 type incidences struct {
