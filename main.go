@@ -76,14 +76,14 @@ func main() {
 		fmt.Println()
 	}
 
-	//conf := &firebase.Config{ProjectID: "rodalieswidget"}
+	/*conf := &firebase.Config{ProjectID: "rodalieswidget"}
 	app, err := firebase.NewApp(context.Background(), nil, option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
 	if err != nil {
 		fmt.Println("error!", err)
 		return
-	}
+	}*/
 
-	cl, err := app.Firestore(context.Background())
+	cl, err := firestore.NewClient(context.Background(), "rodalieswidget", option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
 	if err != nil {
 		fmt.Println("error!", err)
 		return
