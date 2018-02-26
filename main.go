@@ -76,8 +76,8 @@ func main() {
 		fmt.Println()
 	}
 
-	conf := &firebase.Config{ProjectID: "rodalieswidget"}
-	app, err := firebase.NewApp(context.Background(), conf, option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
+	//conf := &firebase.Config{ProjectID: "rodalieswidget"}
+	app, err := firebase.NewApp(context.Background(), nil, option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
 	if err != nil {
 		fmt.Println("error!", err)
 		return
