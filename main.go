@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
+
+	"google.golang.org/api/option"
 
 	"firebase.google.com/go"
 )
@@ -74,7 +77,7 @@ func main() {
 	}
 
 	conf := &firebase.Config{ProjectID: "rodalieswidget"}
-	app, err := firebase.NewApp(context.Background(), conf)
+	app, err := firebase.NewApp(context.Background(), conf, option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
 	if err != nil {
 		fmt.Println("error!", err)
 		return
