@@ -73,8 +73,7 @@ func main() {
 		fmt.Println()
 	}
 
-	conf := &firebase.Config{ProjectID: "rodalieswidget"}
-	app, err := firebase.NewApp(context.Background(), conf)
+	app, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
 		fmt.Println("error!", err)
 		return
