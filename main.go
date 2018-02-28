@@ -79,7 +79,7 @@ func main() {
 	conf, err := google.JWTConfigFromJSON([]byte(os.Getenv("FIREBASE_CONFIG")))
 	ts := conf.TokenSource(context.Background())
 
-	app, err := firebase.NewApp(context.Background(), nil, option.WithTokenSource(ts))
+	app, err := firebase.NewApp(context.Background(), &firebase.Config{ProjectID: os.Getenv("FIREBASE_PROJECT_ID")}, option.WithTokenSource(ts))
 	if err != nil {
 		fmt.Println("error!", err)
 		return
