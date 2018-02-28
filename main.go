@@ -76,7 +76,13 @@ func main() {
 		fmt.Println()
 	}
 
-	conf, err := google.JWTConfigFromJSON([]byte(os.Getenv("FIREBASE_CONFIG")))
+	conf, err := google.JWTConfigFromJSON([]byte(os.Getenv("FIREBASE_CONFIG")),
+		"https://www.googleapis.com/auth/cloud-platform",
+		"https://www.googleapis.com/auth/datastore",
+		"https://www.googleapis.com/auth/devstorage.full_control",
+		"https://www.googleapis.com/auth/firebase",
+		"https://www.googleapis.com/auth/identitytoolkit",
+		"https://www.googleapis.com/auth/userinfo.email")
 	ts := conf.TokenSource(context.Background())
 
 	app, err := firebase.NewApp(context.Background(), &firebase.Config{ProjectID: os.Getenv("FIREBASE_PROJECT_ID")}, option.WithTokenSource(ts))
