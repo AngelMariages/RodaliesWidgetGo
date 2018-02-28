@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 
 	firebase "firebase.google.com/go"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 )
 
 type incidences struct {
@@ -73,7 +76,10 @@ func main() {
 		fmt.Println()
 	}
 
-	app, err := firebase.NewApp(context.Background(), nil)
+	conf, err := google.JWTConfigFromJSON([]byte(os.Getenv("FIREBASE_CONFIG")))
+	ts := conf.TokenSource(context.Background())
+
+	app, err := firebase.NewApp(context.Background(), nil, option.WithTokenSource(ts))
 	if err != nil {
 		fmt.Println("error!", err)
 		return
