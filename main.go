@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"syscall"
 	"time"
 
 	firebase "firebase.google.com/go"
@@ -36,15 +37,16 @@ type alert struct {
 var cercaniasRegex = regexp.MustCompile("(rodalies)?(cercanias)?(aldiriko)?/i")
 
 func main() {
-	last, _ := strconv.ParseInt(os.Getenv("LAST_EXECUTION"), 10, 64)
+	str, _ := syscall.Getenv("LAST_EXECUTION")
+	last, _ := strconv.ParseInt(str, 10, 64)
 	now := time.Now().Unix()
 	fmt.Println("Now", now)
 	fmt.Println("Last", last)
 	fmt.Println("Now - last", now-last)
 	if now-last > 60*10 {
 		fmt.Println("now", strconv.Itoa(int(now)))
-		fmt.Println("now", os.Getenv("LAST_EXECUTION"))
-		err := os.Setenv("LAST_EXECUTION", strconv.Itoa(int(now)))
+		fmt.Println("lasaast", str)
+		syscall.Setenv("LAST_EXECUTION", "321312")
 		client := &http.Client{
 			Timeout: 3 * time.Second,
 		}
