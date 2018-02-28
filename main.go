@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"time"
 
-	"google.golang.org/api/option"
-
-	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
 )
 
 type incidences struct {
@@ -76,14 +73,14 @@ func main() {
 		fmt.Println()
 	}
 
-	/*conf := &firebase.Config{ProjectID: "rodalieswidget"}
-	app, err := firebase.NewApp(context.Background(), nil, option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
+	conf := &firebase.Config{ProjectID: "rodalieswidget"}
+	app, err := firebase.NewApp(context.Background(), conf)
 	if err != nil {
 		fmt.Println("error!", err)
 		return
-	}*/
+	}
 
-	cl, err := firestore.NewClient(context.Background(), "rodalieswidget", option.WithAPIKey(os.Getenv("FIREBASE_API_KEY")))
+	cl, err := app.Firestore(context.Background())
 	if err != nil {
 		fmt.Println("error!", err)
 		return
