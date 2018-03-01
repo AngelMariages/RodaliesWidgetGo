@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"regexp"
+	"sync"
 	"time"
 
 	firebase "firebase.google.com/go"
@@ -35,6 +37,30 @@ type alert struct {
 var cercaniasRegex = regexp.MustCompile("(rodalies)?(cercanias)?(aldiriko)?/i")
 
 func main() {
+	var wait sync.WaitGroup
+	wait.Add(1)
+	ctrlC := make(chan os.Signal, 1)
+	signal.Notify(ctrlC, os.Interrupt)
+	go func() {
+		<-ctrlC
+		wait.Done()
+	}()
+
+	ticker := time.NewTicker(1 * time.Hour).C
+	go func() {
+		for {
+			select {
+			case <-ticker:
+				fmt.Println("Running update")
+				go doIncidencesRequest()
+			}
+		}
+	}()
+	wait.Wait()
+	fmt.Println("Finished")
+}
+
+func doIncidencesRequest() {
 	client := &http.Client{
 		Timeout: 3 * time.Second,
 	}
@@ -54,27 +80,12 @@ func main() {
 		return
 	}
 
-	//fmt.Println("Read:\n", string(body))
-
 	var i incidences
 	err = xml.Unmarshal(body, &i)
 	if err != nil {
 		fmt.Println("error!", err)
 		return
 	}
-
-	/*fmt.Println(i.Alerts)
-	for _, alert := range i.Alerts {
-		fmt.Println(alert.Date)
-		fmt.Println(alert.CA)
-		fmt.Println(alert.Affects)
-		fmt.Println(alert.Title)
-		fmt.Println(alert.Subtitle)
-		fmt.Println(alert.Text)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println()
-	}*/
 
 	conf, err := google.JWTConfigFromJSON([]byte(os.Getenv("FIREBASE_CONFIG")),
 		"https://www.googleapis.com/auth/cloud-platform",
@@ -110,5 +121,4 @@ func main() {
 		fmt.Println("error!", err)
 		return
 	}
-
 }
