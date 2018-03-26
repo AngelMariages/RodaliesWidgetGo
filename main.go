@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"time"
 
+	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -108,9 +109,10 @@ func doIncidencesRequest() {
 
 	for _, alert := range i.Alerts {
 		ref := cl.Collection("incidences").Doc(alert.CA)
-		batch.Set(ref, map[string]interface{}{
-			alert.ID: alert,
-		})
+		batch.Update(ref, []firestore.Update{{
+			Path:  alert.ID,
+			Value: alert,
+		}})
 	}
 
 	_, err = batch.Commit(context.Background())
