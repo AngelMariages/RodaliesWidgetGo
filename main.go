@@ -107,7 +107,7 @@ func doIncidencesRequest() {
 	batch := cl.Batch()
 
 	for _, alert := range i.Alerts {
-		ref := cl.Collection("incidences/" + alert.CA).Doc(alert.ID)
+		ref := cl.Collection("incidences").Doc(alert.CA).Collection(alert.CA).Doc(alert.ID)
 		batch.Set(ref, alert)
 	}
 
