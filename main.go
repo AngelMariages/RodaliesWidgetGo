@@ -35,7 +35,7 @@ type alert struct {
 //var cercaniasRegex = regexp.MustCompile("(rodalies)?(cercanias)?(aldiriko)?/i")
 
 func main() {
-	//doIncidencesRequest()
+	doIncidencesRequest()
 	ctrlC := make(chan os.Signal, 1)
 	signal.Notify(ctrlC, os.Interrupt)
 
@@ -46,7 +46,7 @@ func main() {
 		select {
 		case <-ticker.C:
 			fmt.Println("Running update")
-			//go doIncidencesRequest()
+			go doIncidencesRequest()
 		case <-ctrlC:
 			ticker.Stop()
 			fmt.Println("Finished from Ctrl + C")
