@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"regexp"
-	"sync"
 	"time"
 
 	firebase "firebase.google.com/go"
@@ -34,30 +32,27 @@ type alert struct {
 
 // Aldiriko, Rodalies, Cercanias
 
-var cercaniasRegex = regexp.MustCompile("(rodalies)?(cercanias)?(aldiriko)?/i")
+//var cercaniasRegex = regexp.MustCompile("(rodalies)?(cercanias)?(aldiriko)?/i")
 
 func main() {
-	var wait sync.WaitGroup
-	wait.Add(1)
+	//doIncidencesRequest()
 	ctrlC := make(chan os.Signal, 1)
 	signal.Notify(ctrlC, os.Interrupt)
-	go func() {
-		<-ctrlC
-		wait.Done()
-	}()
 
-	ticker := time.NewTicker(1 * time.Hour).C
-	go func() {
-		for {
-			select {
-			case <-ticker:
-				fmt.Println("Running update")
-				go doIncidencesRequest()
-			}
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			fmt.Println("Running update")
+			//go doIncidencesRequest()
+		case <-ctrlC:
+			ticker.Stop()
+			fmt.Println("Finished from Ctrl + C")
+			return
 		}
-	}()
-	wait.Wait()
-	fmt.Println("Finished")
+	}
 }
 
 func doIncidencesRequest() {
@@ -112,7 +107,7 @@ func doIncidencesRequest() {
 	batch := cl.Batch()
 
 	for _, alert := range i.Alerts {
-		ref := cl.Collection("incidences").Doc(alert.ID)
+		ref := cl.Collection("incidences/" + alert.CA).Doc(alert.ID)
 		batch.Set(ref, alert)
 	}
 
