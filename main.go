@@ -107,8 +107,10 @@ func doIncidencesRequest() {
 	batch := cl.Batch()
 
 	for _, alert := range i.Alerts {
-		ref := cl.Collection("incidences").Doc(alert.CA).Collection(alert.CA).Doc(alert.ID)
-		batch.Set(ref, alert)
+		ref := cl.Collection("incidences").Doc(alert.CA)
+		batch.Set(ref, map[string]interface{}{
+			alert.ID: alert,
+		})
 	}
 
 	_, err = batch.Commit(context.Background())
