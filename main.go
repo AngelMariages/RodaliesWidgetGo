@@ -109,10 +109,9 @@ func doIncidencesRequest() {
 
 	for _, alert := range i.Alerts {
 		ref := cl.Collection("incidences").Doc(alert.CA)
-		batch.Update(ref, []firestore.Update{{
-			Path:  alert.ID,
-			Value: alert,
-		}})
+		batch.Set(ref, map[string]interface{}{
+			alert.ID: alert,
+		}, firestore.MergeAll)
 	}
 
 	_, err = batch.Commit(context.Background())
